@@ -1,10 +1,10 @@
 "use client";
 
 import upcomingSets from "@/app/data/sets";
-
+import { Separator } from "@/components/ui/separator";
 import React, { useEffect, useState } from 'react';
-import { TrendingUp, TrendingDown } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Badge } from "@/components/ui/badge";
 import { LineChart, Line, Tooltip, ResponsiveContainer } from "recharts";
@@ -21,7 +21,7 @@ function calculateImpact(impactRange) {
 
 // Function to check upcoming set impact and calculate sale price
 function checkUpcomingSetImpact(cardName, upcomingSets, marketPrice) {
-  const matchingSet = upcomingSets.find(set => 
+  const matchingSet = upcomingSets.find(set =>
     set.relatedPokemon.some(pokemon => cardName.includes(pokemon))
   );
 
@@ -88,64 +88,155 @@ export default function Home() {
   const chartData = [
     { name: '30 Days Ago', marketPrice: cardData?.cardmarket?.prices?.avg30 ?? 0 },
     { name: '7 Days Ago', marketPrice: cardData?.cardmarket?.prices?.avg7 ?? 0 },
-    { name: 'Current Price', marketPrice: marketPrice },
+    { name: 'Current Price', marketPrice: parseFloat(marketPrice) },
   ];
 
   const chartConfig = {
     marketPrice: {
       label: "Market Price",
-      color: 'hsl(var(--chart-1))',
+      color: 'hsl(var(--primary))',
     },
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-950 text-white">
-      {/* Display card data */}
-      <Card className="w-[400px] bg-gray-800 shadow-lg text-white">
-        <CardHeader>
-          <CardTitle>{cardData.name}</CardTitle>
-          <CardDescription>
-            <Badge variant="outline">${salePrice}</Badge>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <img src={cardData.images.large} alt={cardData.name} className="w-full mb-4" />
-          <p>Rarity: {cardData.rarity}</p>
-          <p>Market Price: ${marketPrice}</p>
-          <p>Average Sell Price: ${averageSellPrice}</p>
-          <p>Sale Price: ${salePrice}</p>
-
-          {/* Predictive Analysis Section */}
-          <div className="mt-4">
-            <h4 className="text-lg font-medium">Upcoming Set Impact</h4>
-            <p>{predictedImpact}</p>
+    <div className="flex items-center justify-center min-h-screen p-4 bg-background text-foreground">
+      <div className="w-full max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Left column */}
+        <div className="md:col-span-1">
+          <img src={cardData.images.large} alt={cardData.name} className="w-full rounded-lg shadow-lg" />
+          <div className="mt-4 space-y-2">
+            <Badge variant="secondary" className="text-sm">NM+</Badge>
+            <p className="text-sm text-muted-foreground">{cardData.set.name}</p>
           </div>
-        </CardContent>
-
-        {/* Line Chart with Padding and Dots */}
-        <div className="mt-4">
-          <ChartContainer config={chartConfig}>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart
-                data={chartData}
-                margin={{ top: 20, right: 30, left: 30, bottom: 20 }}
-              >
-                <Tooltip
-                  content={<ChartTooltipContent hideLabel className='bg-gray-800 text-white' />}
-                  cursor={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="marketPrice"
-                  stroke='white'
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartContainer>
         </div>
-      </Card>
+
+        {/* Middle column - intentionally left blank for spacing */}
+        <div className="hidden md:block"></div>
+
+        {/* Right column */}
+        <Card x-chunk="dashboard-01-chunk-0">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              {cardData.name}
+            </CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${salePrice}</div>
+          </CardContent>
+          <CardContent>
+            <div className="grid gap-3">
+              <dl className="grid gap-3">
+                <div className="flex items-center justify-between">
+                  <dt className="text-muted-foreground">Rarity</dt>
+                  <dd>{cardData.rarity}</dd>
+                </div>
+                <div className="flex items-center justify-between">
+                  <dt className="text-muted-foreground">Market Price</dt>
+                  <dd className="flex items-center">
+                    ${marketPrice}
+                    {typeof cardData?.cardmarket?.prices?.avg30 === 'number' && (
+                      <span className="ml-2 text-sm">
+                        {marketPrice > cardData.cardmarket.prices.avg30 ? (
+                          <TrendingUp className="inline h-4 w-4 text-green-500" />
+                        ) : (
+                          <TrendingDown className="inline h-4 w-4 text-red-500" />
+                        )}
+                      </span>
+                    )}
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between">
+                  <dt className="text-muted-foreground">Avg Sell Price</dt>
+                  <dd className="flex items-center">
+                    ${averageSellPrice.toFixed(2)}
+                    {typeof cardData?.cardmarket?.prices?.avg30 === 'number' && (
+                      <span className="ml-2 text-sm">
+                        {averageSellPrice > cardData.cardmarket.prices.avg30 ? (
+                          <TrendingUp className="inline h-4 w-4 text-green-500" />
+                        ) : (
+                          <TrendingDown className="inline h-4 w-4 text-red-500" />
+                        )}
+                      </span>
+                    )}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+            <Separator className="my-4" />
+            <div>
+              <h4 className="text-lg font-medium mb-2">Upcoming Set Impact</h4>
+              <p className="text-muted-foreground">{predictedImpact}</p>
+            </div>
+            <br></br>
+            <div className="h-40">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <Line 
+                    type="monotone" 
+                    dataKey="marketPrice" 
+                    stroke={chartConfig.marketPrice.color} 
+                    strokeWidth={2} 
+                    dot={{ r: 4 }} 
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-background border border-border p-2 rounded shadow">
+                            <p className="font-semibold">{payload[0].payload.name}</p>
+                            <p>${payload[0].value.toFixed(2)}</p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-row border-t p-4">
+            <div className="flex w-full items-center gap-2">
+              <div className="grid flex-1 auto-rows-min gap-0.5">
+                <div className="text-xs text-muted-foreground">Market Price</div>
+                <div className="flex items-baseline gap-1 text-2xl font-bold tabular-nums leading-none">
+                  <span className="text-sm font-normal text-muted-foreground">
+                    {averageSellPrice > cardData.cardmarket.prices.avg30 ? (
+                      <TrendingUp className="inline h-4 w-4 text-green-500" />
+                    ) : (
+                      <TrendingDown className="inline h-4 w-4 text-red-500" />
+                    )}
+                  </span>
+                  {typeof cardData?.cardmarket?.prices?.avg30 === 'number' && (
+                    <span>
+                        {((marketPrice - cardData.cardmarket.prices.avg30) / cardData.cardmarket.prices.avg30 * 100).toFixed(1)}%
+                    </span>
+                  )}
+                </div>
+              </div>
+              <Separator orientation="vertical" className="mx-2 h-10 w-px" />
+              <div className="grid flex-1 auto-rows-min gap-0.5">
+                <div className="text-xs text-muted-foreground">Avg Sell Price</div>
+                <div className="flex items-baseline gap-1 text-2xl font-bold tabular-nums leading-none">
+                  <span className="text-sm font-normal text-muted-foreground">
+                    {averageSellPrice > cardData.cardmarket.prices.avg30 ? (
+                      <TrendingUp className="inline h-4 w-4 text-green-500" />
+                    ) : (
+                      <TrendingDown className="inline h-4 w-4 text-red-500" />
+                    )}
+                  </span>
+                  {typeof cardData?.cardmarket?.prices?.avg30 === 'number' && (
+                    <span>
+                      {((averageSellPrice - cardData.cardmarket.prices.avg30) / cardData.cardmarket.prices.avg30 * 100).toFixed(1)}%
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 }
