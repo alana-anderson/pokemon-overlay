@@ -83,7 +83,7 @@ function calculatePopularityIndex(cardData) {
 
 export default function Home() {
   const [cardData, setCardData] = useState(null);
-  const cardId = 'swsh7-198'; // Gold Star Pika as example
+  const cardId = 'ex13-104'; // Gold Star Pika as example
 
   useEffect(() => {
     const fetchCardData = async () => {
