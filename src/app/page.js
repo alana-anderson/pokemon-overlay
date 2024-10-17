@@ -20,15 +20,16 @@ function calculateImpact(impactRange) {
 }
 
 // Function to check upcoming set impact and calculate sale price
-function checkUpcomingSetImpact(cardName, upcomingSets, marketPrice) {
+function checkUpcomingSetImpact(cardName, upcomingSets, cardData) {
+  const marketPrice = cardData.tcgplayer.prices.holofoil.market || cardData.tcgplayer.prices.normal.market;
   const matchingSet = upcomingSets.find(set =>
     set.relatedPokemon.some(pokemon => cardName.includes(pokemon))
   );
 
   if (matchingSet) {
-    const impactPercentage = calculateImpact(matchingSet.impact); // Get mean impact
-    const predictedImpact = (marketPrice * impactPercentage) / 100; // Apply impact to market price
-    const salePrice = marketPrice + predictedImpact; // Recommended sale price
+    const impactPercentage = calculateImpact(matchingSet.impact);
+    const predictedImpact = (marketPrice * impactPercentage) / 100;
+    const salePrice = marketPrice + predictedImpact;
 
     return {
       predictedImpact: matchingSet.predictedImpact,
@@ -38,13 +39,51 @@ function checkUpcomingSetImpact(cardName, upcomingSets, marketPrice) {
 
   return {
     predictedImpact: "No upcoming impact predicted.",
-    salePrice: marketPrice.toFixed(2)
+    salePrice: marketPrice.toFixed(2),
+    marketTrend: calculateMarketTrend(cardData),
+    rarity: cardData.rarity,
+    setRotationStatus: checkSetRotationStatus(cardData.set.releaseDate),
+    popularityIndex: calculatePopularityIndex(cardData)
   };
+}
+
+function calculateMarketTrend(cardData) {
+  const recentPrices = [cardData.cardmarket.prices.avg7, cardData.cardmarket.prices.avg30];
+  const currentPrice = cardData.tcgplayer.prices.holofoil.market || cardData.tcgplayer.prices.normal.market;
+  
+  if (currentPrice > recentPrices[0] && recentPrices[0] > recentPrices[1]) {
+    return "Upward trend";
+  } else if (currentPrice < recentPrices[0] && recentPrices[0] < recentPrices[1]) {
+    return "Downward trend";
+  } else {
+    return "Stable";
+  }
+}
+
+function checkSetRotationStatus(releaseDate) {
+  const rotationDate = new Date(new Date().getFullYear(), 8, 1); // September 1st of current year
+  const setDate = new Date(releaseDate);
+  const twoYearsAgo = new Date(rotationDate.getFullYear() - 2, rotationDate.getMonth(), rotationDate.getDate());
+  
+  if (setDate < twoYearsAgo) {
+    return "Rotated out";
+  } else if (setDate < rotationDate && setDate >= twoYearsAgo) {
+    return "Rotating soon";
+  } else {
+    return "In standard format";
+  }
+}
+
+function calculatePopularityIndex(cardData) {
+  // This would be a more complex function based on your data sources
+  // For now, we'll use a placeholder calculation
+  const priceRatio = cardData.tcgplayer.prices.holofoil.market / cardData.tcgplayer.prices.holofoil.low;
+  return (priceRatio * 10).toFixed(1) + " / 10";
 }
 
 export default function Home() {
   const [cardData, setCardData] = useState(null);
-  const cardId = 'ex13-104'; // Gold Star Pika as example
+  const cardId = 'swsh7-198'; // Gold Star Pika as example
 
   useEffect(() => {
     const fetchCardData = async () => {
@@ -80,8 +119,9 @@ export default function Home() {
     return <div>Market price not available</div>;
   }
 
-  // Use the upcoming set impact function to calculate sale price and impact prediction
-  const { predictedImpact, salePrice: initialSalePrice } = checkUpcomingSetImpact(cardData.name, upcomingSets, marketPrice);
+  // Use the updated checkUpcomingSetImpact function
+  const result = checkUpcomingSetImpact(cardData.name, upcomingSets, cardData);
+  const { predictedImpact, salePrice: initialSalePrice } = result;
   const salePrice = averageSellPrice > marketPrice ? (averageSellPrice * 1.1).toFixed(2) : initialSalePrice;
 
   // Updated chart data - positioning 30-day, 7-day, and current price as specified.
@@ -161,6 +201,30 @@ export default function Home() {
                     )}
                   </dd>
                 </div>
+                {!result.marketTrend ? null : (
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted-foreground">Market Trend</dt>
+                    <dd>{result.marketTrend}</dd>
+                  </div>
+                )}
+                {!result.rarity ? null : (
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted-foreground">Rarity</dt>
+                    <dd>{result.rarity}</dd>
+                  </div>
+                )}
+                {!result.setRotationStatus ? null : (
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted-foreground">Set Rotation Status</dt>
+                    <dd>{result.setRotationStatus}</dd>
+                  </div>
+                )}
+                {!result.popularityIndex ? null : (
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted-foreground">Popularity Index</dt>
+                    <dd>{result.popularityIndex}</dd>
+                  </div>
+                )}
               </dl>
             </div>
             <Separator className="my-4" />
@@ -202,7 +266,7 @@ export default function Home() {
                 <div className="text-xs text-muted-foreground">Market Price</div>
                 <div className="flex items-baseline gap-1 text-2xl font-bold tabular-nums leading-none">
                   <span className="text-sm font-normal text-muted-foreground">
-                    {averageSellPrice > cardData.cardmarket.prices.avg30 ? (
+                    {marketPrice > cardData.cardmarket.prices.avg30 ? (
                       <TrendingUp className="inline h-4 w-4 text-green-500" />
                     ) : (
                       <TrendingDown className="inline h-4 w-4 text-red-500" />

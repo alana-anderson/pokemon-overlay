@@ -6,29 +6,57 @@ import { Card, CardContent } from "@/components/ui/card";
 import { X } from 'lucide-react';
 
 // Updated inventory with 'available' property
+import { Badge } from "@/components/ui/badge";
+
 const inventory = [
-  { id: 'ex13-104', name: 'Gold Star Pikachu', available: true },
-  { id: 'base1-4', name: 'Charizard', available: false },
-  { id: 'base1-2', name: 'Blastoise', available: true },
-  { id: 'base1-1', name: 'Bulbasaur', available: true },
-  { id: 'base1-3', name: 'Venusaur', available: false },
-  { id: 'base1-5', name: 'Charmander', available: true },
-  { id: 'base1-6', name: 'Charmeleon', available: true },
-  { id: 'base1-7', name: 'Charizard', available: false },
-  { id: 'base1-8', name: 'Squirtle', available: true },
-  { id: 'base1-9', name: 'Wartortle', available: true },
-  { id: 'base1-10', name: 'Blastoise', available: false },
-  { id: 'base1-11', name: 'Caterpie', available: true },
-  { id: 'base1-12', name: 'Metapod', available: true },
-  { id: 'base1-13', name: 'Butterfree', available: false },
-  { id: 'base1-14', name: 'Weedle', available: true },
-  { id: 'base1-15', name: 'Kakuna', available: true },
-  { id: 'base1-16', name: 'Beedrill', available: false },
-  { id: 'base1-17', name: 'Pidgey', available: true },
-  { id: 'base1-18', name: 'Pidgeotto', available: true },
-  { id: 'base1-19', name: 'Pidgeot', available: false },
-  // Add more cards as needed
+  // Vintage Era (1st Generation)
+  { id: 'base1-4', name: 'Charizard', available: true, condition: 'LP', era: 'Vintage' },
+  { id: 'base1-2', name: 'Blastoise', available: true, condition: 'MP', era: 'Vintage' },
+  { id: 'base1-15', name: 'Venusaur', available: false, condition: 'HP', era: 'Vintage' },
+  { id: 'fossil-1', name: 'Aerodactyl', available: true, condition: 'NM', era: 'Vintage' },
+  { id: 'jungle-1', name: 'Clefable', available: false, condition: 'MP', era: 'Vintage' },
+  { id: 'base2-4', name: 'Mewtwo', available: true, condition: 'LP', era: 'Vintage' },
+  { id: 'gym1-2', name: 'Blaine\'s Charizard', available: true, condition: 'NM', era: 'Vintage' },
+  { id: 'gym2-14', name: 'Rocket\'s Mewtwo', available: false, condition: 'HP', era: 'Vintage' },
+  { id: 'neo1-8', name: 'Lugia', available: true, condition: 'MP', era: 'Vintage' },
+  { id: 'neo2-17', name: 'Shining Gyarados', available: false, condition: 'LP', era: 'Vintage' },
+
+  // Mid Era (3rd-5th Generation)
+  { id: 'ex1-95', name: 'Rayquaza ex', available: true, condition: 'NM', era: 'Mid' },
+  { id: 'ex13-104', name: 'Gold Star Pikachu', available: true, condition: 'NM', era: 'Mid' },
+  { id: 'dp1-130', name: 'Dialga LV.X', available: false, condition: 'LP', era: 'Mid' },
+  { id: 'pl4-122', name: 'Arceus LV.X', available: true, condition: 'MP', era: 'Mid' },
+  { id: 'hgss1-123', name: 'Lugia LEGEND', available: false, condition: 'NM', era: 'Mid' },
+  { id: 'col1-1', name: 'Kyogre & Groudon LEGEND', available: true, condition: 'LP', era: 'Mid' },
+  { id: 'bw1-114', name: 'Reshiram Full Art', available: true, condition: 'NM', era: 'Mid' },
+  { id: 'bw5-138', name: 'Bianca Full Art', available: false, condition: 'MP', era: 'Mid' },
+  { id: 'xy1-146', name: 'Yveltal EX Full Art', available: true, condition: 'NM', era: 'Mid' },
+  { id: 'xy6-119', name: 'M Rayquaza EX Full Art', available: false, condition: 'LP', era: 'Mid' },
+
+  // Modern Era (6th Generation onwards)
+  { id: 'sm1-152', name: 'Lillie Full Art', available: true, condition: 'NM', era: 'Modern' },
+  { id: 'sm8-226', name: 'Cynthia Full Art', available: false, condition: 'NM', era: 'Modern' },
+  { id: 'sm12-247', name: 'Reshiram & Charizard GX Rainbow', available: true, condition: 'NM', era: 'Modern' },
+  { id: 'swsh1-202', name: 'Zacian V Full Art', available: true, condition: 'NM', era: 'Modern' },
+  { id: 'swsh3-193', name: 'Eternatus VMAX Rainbow', available: false, condition: 'LP', era: 'Modern' },
+  { id: 'swsh5-188', name: 'Pikachu VMAX Rainbow', available: true, condition: 'NM', era: 'Modern' },
+  { id: 'swsh7-198', name: 'Umbreon VMAX Alternate Art', available: false, condition: 'NM', era: 'Modern' },
+  { id: 'swsh9-154', name: 'Charizard V Alternate Art', available: true, condition: 'NM', era: 'Modern' },
+  { id: 'swsh11-172', name: 'Giratina VSTAR Rainbow', available: true, condition: 'NM', era: 'Modern' },
+  { id: 'swsh12-186', name: 'Lugia VSTAR Rainbow', available: false, condition: 'LP', era: 'Modern' },
 ];
+
+// Add this component to render the badge
+const ConditionBadge = ({ condition }) => (
+  <Badge className="absolute top-2 right-2" variant="secondary" size="sm">
+    {condition}
+  </Badge>
+);
+
+// Remove or comment out the AvailabilityStatus component
+// const AvailabilityStatus = ({ available }) => (
+//   <div className={`absolute top-2 right-2 w-3 h-3 rounded-full ${available ? 'bg-green-500' : 'bg-red-500'}`} />
+// );
 
 export default function Inventory() {
   const [cardImages, setCardImages] = useState({});
@@ -113,6 +141,7 @@ export default function Inventory() {
                         <X className="text-white w-12 h-12" />
                       </div>
                     )}
+                    {card.available && <ConditionBadge condition={card.condition} />}
                   </>
                 ) : (
                   <div className="w-full h-full bg-gray-700 flex items-center justify-center rounded-md">
