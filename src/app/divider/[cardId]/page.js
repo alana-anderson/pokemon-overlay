@@ -5,8 +5,9 @@ import { useParams } from 'next/navigation';
 import axios from 'axios';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, BarChart2 } from "lucide-react";
+import { TrendingUp, TrendingDown, BarChart2, DollarSign } from "lucide-react";
 import upcomingSets from "@/app/data/sets";
+import Image from 'next/image';
 
 // Add these functions outside of the component
 function calculateImpact(impactRange) {
@@ -66,12 +67,12 @@ const StatsComponent = ({ cardData }) => {
   const result = checkUpcomingSetImpact(cardData.name, upcomingSets, cardData);
   const { predictedImpact, salePrice: initialSalePrice } = result;
   const salePrice = typeof marketPrice === 'number' && averageSellPrice > marketPrice 
-    ? (averageSellPrice * 1.1).toFixed(2) 
-    : initialSalePrice;
+    ? Math.round(averageSellPrice * 1.1)
+    : initialSalePrice !== 'N/A' ? Math.round(parseFloat(initialSalePrice)) : 'N/A';
 
   const calculateTrendPercentage = (currentPrice, previousPrice) => {
     if (previousPrice === 0) return 0;
-    return ((currentPrice - previousPrice) / previousPrice * 100).toFixed(2);
+    return Math.round((currentPrice - previousPrice) / previousPrice * 100);
   };
 
   const marketPriceTrend = calculateTrendPercentage(marketPrice, avg30Price);
@@ -87,11 +88,20 @@ const StatsComponent = ({ cardData }) => {
 
   const demandIndex = calculateDemandIndex(marketPrice, averageSellPrice);
 
-  const StatItem = ({ label, value, trend }) => (
+  const StatItem = ({ label, value, trend, isMarketPrice = false }) => (
     <div className="flex flex-col">
       <h3 className="text-sm font-medium text-zinc-400 mb-1">{label}</h3>
       <div className="flex items-baseline">
-        <p className="text-2xl font-semibold text-zinc-100">{value}</p>
+        <p className="text-2xl font-semibold text-zinc-100">
+          {value.startsWith('$') ? (
+            <>
+              <DollarSign className="h-4 w-4 text-muted-foreground inline mr-1" />
+              {isMarketPrice ? 
+                Math.floor(parseFloat(value.substring(1))) : 
+                Math.round(parseFloat(value.substring(1)))}
+            </>
+          ) : value}
+        </p>
         {trend !== null && (
           <Badge variant="outline" className="ml-2 text-xs border-zinc-700 text-zinc-400">
             {trend > 0 ? <TrendingUp className="inline h-3 w-3 mr-1" /> : <TrendingDown className="inline h-3 w-3 mr-1" />}
@@ -103,7 +113,7 @@ const StatsComponent = ({ cardData }) => {
   );
 
   return (
-    <Card className="w-full bg-zinc-900 shadow-lg border-zinc-800">
+    <Card className="w-full bg-zinc-900 shadow-lg border-zinc-800 relative">
       <CardContent className="p-6">
         <div className="grid grid-cols-6 gap-4 items-center">
           <div className="flex flex-col justify-center">
@@ -112,8 +122,9 @@ const StatsComponent = ({ cardData }) => {
           </div>
           <StatItem 
             label="Market Price" 
-            value={`$${typeof marketPrice === 'number' ? marketPrice.toFixed(2) : marketPrice}`}
+            value={`$${typeof marketPrice === 'number' ? marketPrice : marketPrice}`}
             trend={marketPriceTrend}
+            isMarketPrice={true}
           />
           <div className="flex flex-col">
             <h3 className="text-sm font-medium text-zinc-400 mb-1">Demand Index</h3>
@@ -124,7 +135,7 @@ const StatsComponent = ({ cardData }) => {
           </div>
           <StatItem 
             label="Avg. Sell Price" 
-            value={`$${averageSellPrice.toFixed(2)}`}
+            value={`$${Math.round(averageSellPrice)}`}
             trend={avgSellPriceTrend}
           />
           <StatItem 
@@ -139,6 +150,15 @@ const StatsComponent = ({ cardData }) => {
           />
         </div>
       </CardContent>
+      <div className="absolute top-4 right-4 w-12 h-auto">
+        <Image 
+          src={cardData.images.small} 
+          alt={cardData.name} 
+          width={96}
+          height={134}
+          className="rounded-sm shadow-md"
+        />
+      </div>
     </Card>
   );
 };
