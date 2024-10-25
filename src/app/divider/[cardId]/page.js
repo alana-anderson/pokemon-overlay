@@ -9,7 +9,6 @@ import { TrendingUp, TrendingDown, BarChart2, DollarSign } from "lucide-react";
 import upcomingSets from "@/app/data/sets";
 import Image from 'next/image';
 
-// Add these functions outside of the component
 function calculateImpact(impactRange) {
   const [min, max] = impactRange.replace('%', '').split('-').map(Number);
   if (isNaN(min) || isNaN(max) || min < 0 || max < 0) {
@@ -63,7 +62,6 @@ const StatsComponent = ({ cardData }) => {
   const averageSellPrice = cardData?.cardmarket?.prices?.averageSellPrice ?? 0;
   const avg30Price = cardData?.cardmarket?.prices?.avg30 ?? 0;
 
-  // Calculate sale price using checkUpcomingSetImpact
   const result = checkUpcomingSetImpact(cardData.name, upcomingSets, cardData);
   const { predictedImpact, salePrice: initialSalePrice } = result;
   const salePrice = typeof marketPrice === 'number' && averageSellPrice > marketPrice 
@@ -90,9 +88,9 @@ const StatsComponent = ({ cardData }) => {
 
   const StatItem = ({ label, value, trend, isMarketPrice = false }) => (
     <div className="flex flex-col">
-      <h3 className="text-sm font-medium text-zinc-400 mb-1">{label}</h3>
+      <h3 className="text-sm font-medium text-gray-300 mb-1">{label}</h3>
       <div className="flex items-baseline">
-        <p className="text-2xl font-semibold text-zinc-100">
+        <p className="text-2xl font-semibold text-white">
           {value.startsWith('$') ? (
             <>
               <DollarSign className="h-4 w-4 text-muted-foreground inline mr-1" />
@@ -103,7 +101,7 @@ const StatsComponent = ({ cardData }) => {
           ) : value}
         </p>
         {trend !== null && (
-          <Badge variant="outline" className="ml-2 text-xs border-zinc-700 text-zinc-400">
+          <Badge variant="outline" className="ml-2 text-xs border-zinc-700 text-gray-300">
             {trend > 0 ? <TrendingUp className="inline h-3 w-3 mr-1" /> : <TrendingDown className="inline h-3 w-3 mr-1" />}
             {Math.abs(trend)}%
           </Badge>
@@ -113,53 +111,67 @@ const StatsComponent = ({ cardData }) => {
   );
 
   return (
-    <Card className="w-full bg-zinc-900 shadow-lg border-zinc-800 relative">
-      <CardContent className="p-6">
-        <div className="grid grid-cols-6 gap-4 items-center">
-          <div className="flex flex-col justify-center">
-            <h2 className="text-2xl font-bold text-zinc-100">{cardData.name}</h2>
-            <p className="text-sm text-zinc-400">{cardData.set.name}</p>
-          </div>
-          <StatItem 
-            label="Market Price" 
-            value={`$${typeof marketPrice === 'number' ? marketPrice : marketPrice}`}
-            trend={marketPriceTrend}
-            isMarketPrice={true}
-          />
-          <div className="flex flex-col">
-            <h3 className="text-sm font-medium text-zinc-400 mb-1">Demand Index</h3>
-            <div className="flex items-center">
-              <BarChart2 className="h-6 w-6 mr-2 text-blue-500" />
-              <span className="text-2xl font-semibold text-zinc-100">{demandIndex}</span>
+    <div 
+      className="p-[1px] rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 via-pink-500 via-red-500 via-yellow-500 via-green-500 to-blue-500"
+      style={{
+        backgroundSize: '200% 200%',
+        animation: 'rainbow-animation 6s linear infinite',
+      }}
+    >
+      <Card className="w-full bg-zinc-900 shadow-lg border-none relative overflow-hidden rounded-lg">
+        <div
+          className="absolute inset-0 z-0"
+          style={{ backgroundImage: `url(${cardData.images.large})`, backgroundSize: 'cover', backgroundPosition: 'center 15%' }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 via-fuchsia-500/30 to-pink-500/30 z-10" />
+        <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-sm z-20" />
+        <CardContent className="p-6 relative z-30">
+          <div className="grid grid-cols-6 gap-4 items-center">
+            <div className="flex flex-col justify-center">
+              <h2 className="text-2xl font-bold text-white">{cardData.name}</h2>
+              <p className="text-sm text-gray-300">{cardData.set.name}</p>
             </div>
+            <StatItem 
+              label="Market Price" 
+              value={`$${typeof marketPrice === 'number' ? marketPrice : marketPrice}`}
+              trend={marketPriceTrend}
+              isMarketPrice={true}
+            />
+            <div className="flex flex-col">
+              <h3 className="text-sm font-medium text-gray-300 mb-1">Demand Index</h3>
+              <div className="flex items-center">
+                <BarChart2 className="h-6 w-6 mr-2 text-blue-500" />
+                <span className="text-2xl font-semibold text-white">{demandIndex}</span>
+              </div>
+            </div>
+            <StatItem 
+              label="Avg. Sell Price" 
+              value={`$${Math.round(averageSellPrice)}`}
+              trend={avgSellPriceTrend}
+            />
+            <StatItem 
+              label="Rotation Status" 
+              value={checkSetRotationStatus(cardData.set.releaseDate)}
+              trend={null}
+            />
+            <StatItem 
+              label="Sale Price" 
+              value={salePrice === 'N/A' ? 'N/A' : `$${salePrice}`}
+              trend={null}
+            />
           </div>
-          <StatItem 
-            label="Avg. Sell Price" 
-            value={`$${Math.round(averageSellPrice)}`}
-            trend={avgSellPriceTrend}
-          />
-          <StatItem 
-            label="Rotation Status" 
-            value={checkSetRotationStatus(cardData.set.releaseDate)}
-            trend={null}
-          />
-          <StatItem 
-            label="Sale Price" 
-            value={salePrice === 'N/A' ? 'N/A' : `$${salePrice}`}
-            trend={null}
+        </CardContent>
+        <div className="absolute top-4 right-4 w-16 h-auto z-40">
+          <Image 
+            src={cardData.images.small} 
+            alt={cardData.name} 
+            width={128}
+            height={179}
+            className="rounded-sm shadow-md"
           />
         </div>
-      </CardContent>
-      <div className="absolute top-4 right-4 w-12 h-auto">
-        <Image 
-          src={cardData.images.small} 
-          alt={cardData.name} 
-          width={96}
-          height={134}
-          className="rounded-sm shadow-md"
-        />
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 };
 
@@ -212,7 +224,7 @@ export default function DividerPage() {
   }, [cardId]);
 
   if (loading) {
-    return <div className="container mx-auto p-4 text-zinc-100">Loading...</div>;
+    return <div className="container mx-auto p-4 text-white">Loading...</div>;
   }
 
   if (error) {
@@ -222,6 +234,13 @@ export default function DividerPage() {
   return (
     <div className="container mx-auto p-4 bg-black min-h-screen">
       <StatsComponent cardData={cardData} />
+      <style jsx>{`
+        @keyframes rainbow-animation {
+          0% {background-position: 0% 50%;}
+          50% {background-position: 100% 50%;}
+          100% {background-position: 0% 50%;}
+        }
+      `}</style>
     </div>
   );
 }
