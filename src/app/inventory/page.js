@@ -20,6 +20,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import Marquee from '@/components/ui/marquee'; // Ensure this path is correct
 
 const inventory = [
   // Vintage Era (1st Generation)
@@ -120,76 +121,10 @@ const CardActions = ({ card, queue, onAddToStack, onMarkSold }) => {
   );
 };
 
-// Remove or comment out the AvailabilityStatus component
-// const AvailabilityStatus = ({ available }) => (
-//   <div className={`absolute top-2 right-2 w-3 h-3 rounded-full ${available ? 'bg-green-500' : 'bg-red-500'}`} />
-// );
-
-const pulseAnimation = `
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-      opacity: 1;
-    }
-    50% {
-      transform: scale(1.1);
-      opacity: 0.7;
-    }
-    100% {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
-`;
-
-const NowServing = ({ queue, cardImages }) => {
-  return (
-    <div className="space-y-2">
-      {queue.map((item, index) => (
-        <Card key={item.username} className="p-4 bg-gray-900">
-          <div className="flex flex-col space-y-2">
-            <div className="flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${index === 0 ? 'bg-green-500' : 'bg-blue-500'}`}></div>
-              <div>
-                <p className="text-sm font-medium text-white">
-                  {index === 0 ? 'Now Serving' : 'Waiting in queue'}
-                </p>
-                <p className="text-xs text-gray-400">{item.username}</p>
-              </div>
-            </div>
-            {index === 0 && item.stack.length > 0 && (
-              <div className="flex flex-wrap -space-x-4 overflow-visible pt-2">
-                {item.stack.map((cardId, cardIndex) => (
-                  <div 
-                    key={cardId} 
-                    className="relative w-12 h-16 rounded-md overflow-hidden border border-gray-700 shadow-md transition-transform hover:transform hover:scale-110 hover:z-10"
-                    style={{ zIndex: item.stack.length - cardIndex }}
-                  >
-                    <Image
-                      src={cardImages[cardId]}
-                      alt={`Card ${cardId}`}
-                      layout="fill"
-                      objectFit="cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </Card>
-      ))}
-    </div>
-  );
-};
-
 export default function Inventory() {
   const [cardImages, setCardImages] = useState({});
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [queue, setQueue] = useState([
-    { username: 'username123', priority: 1, stack: [] },
-    { username: 'testymctestface', priority: 2, stack: [] },
-    { username: 'jortz', priority: 3, stack: [] },
-  ]);
+  const [queue, setQueue] = useState([]);
   const [inventoryState, setInventoryState] = useState(inventory);
 
   useEffect(() => {
@@ -278,55 +213,152 @@ export default function Inventory() {
 
   return (
     <div className="container mx-auto p-2">
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2">
-        {inventoryState.map((card, index) => (
-          <Card 
-            key={card.id} 
-            className={`cursor-pointer bg-gray-800 hover:bg-gray-700 transition-colors group ${index === selectedIndex ? 'ring-2 ring-primary' : ''}`}
-          >
-            <CardContent className="p-2 relative">
-              <div className="relative w-full aspect-[2/3]">
-                {cardImages[card.id] ? (
-                  <>
-                    <Image
-                      src={cardImages[card.id]}
-                      alt={card.name}
-                      layout="fill"
-                      objectFit="cover"
-                      className={`rounded-md shadow-md ${!card.available ? 'brightness-50' : ''}`}
-                    />
-                    {!card.available && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <X className="text-white w-12 h-12" />
-                      </div>
-                    )}
-                    {isCardInStack(card.id) && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Layers3 className="text-white w-12 h-12" />
-                      </div>
-                    )}
-                    {card.available && !isCardInStack(card.id) && <ConditionBadge condition={card.condition} />}
-                  </>
-                ) : (
-                  <div className="w-full h-full bg-gray-700 flex items-center justify-center rounded-md">
-                    <span className="text-gray-400 text-xs">Loading...</span>
-                  </div>
-                )}
-              </div>
-              <CardActions 
-                card={card}
-                queue={queue}
-                onAddToStack={handleAddToStack}
-                onMarkSold={handleMarkSold}
-              />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-      <div className="mt-8 flex">
-        <div className="w-1/4">
-          <NowServing queue={queue} cardImages={cardImages} />
+      {/* First Row of Marquee */}
+      <Marquee className="mb-4" pauseOnHover style={{ '--duration': '130s' }}>
+        <div className="flex space-x-4">
+          {inventoryState.map((card) => (
+            <Card 
+              key={card.id} 
+              className="cursor-pointer bg-gray-800 hover:bg-gray-700 transition-colors group w-48"
+            >
+              <CardContent className="p-2 relative">
+                <div className="relative w-full aspect-[2/3]">
+                  {cardImages[card.id] ? (
+                    <>
+                      <Image
+                        src={cardImages[card.id]}
+                        alt={card.name}
+                        layout="fill"
+                        className={`rounded-md shadow-md ${!card.available ? 'brightness-50' : ''}`}
+                      />
+                      {!card.available && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <X className="text-white w-12 h-12" />
+                        </div>
+                      )}
+                      {isCardInStack(card.id) && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Layers3 className="text-white w-12 h-12" />
+                        </div>
+                      )}
+                      {card.available && !isCardInStack(card.id) && <ConditionBadge condition={card.condition} />}
+                    </>
+                  ) : (
+                    <div className="w-full h-full bg-gray-700 flex items-center justify-center rounded-md">
+                      <span className="text-gray-400 text-xs">Loading...</span>
+                    </div>
+                  )}
+                </div>
+                <CardActions 
+                  card={card}
+                  queue={queue}
+                  onAddToStack={handleAddToStack}
+                  onMarkSold={handleMarkSold}
+                />
+              </CardContent>
+            </Card>
+          ))}
         </div>
+      </Marquee>
+
+      {/* Second Row of Marquee */}
+      <Marquee className="mb-4" pauseOnHover style={{ '--duration': '130s' }} reverse>
+        <div className="flex space-x-4">
+          {inventoryState.map((card) => (
+            <Card 
+              key={card.id} 
+              className="cursor-pointer bg-gray-800 hover:bg-gray-700 transition-colors group w-48"
+            >
+              <CardContent className="p-2 relative">
+                <div className="relative w-full aspect-[2/3]">
+                  {cardImages[card.id] ? (
+                    <>
+                      <Image
+                        src={cardImages[card.id]}
+                        alt={card.name}
+                        layout="fill"
+                        className={`rounded-md shadow-md ${!card.available ? 'brightness-50' : ''}`}
+                      />
+                      {!card.available && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <X className="text-white w-12 h-12" />
+                        </div>
+                      )}
+                      {isCardInStack(card.id) && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Layers3 className="text-white w-12 h-12" />
+                        </div>
+                      )}
+                      {card.available && !isCardInStack(card.id) && <ConditionBadge condition={card.condition} />}
+                    </>
+                  ) : (
+                    <div className="w-full h-full bg-gray-700 flex items-center justify-center rounded-md">
+                      <span className="text-gray-400 text-xs">Loading...</span>
+                    </div>
+                  )}
+                </div>
+                <CardActions 
+                  card={card}
+                  queue={queue}
+                  onAddToStack={handleAddToStack}
+                  onMarkSold={handleMarkSold}
+                />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </Marquee>
+
+      {/* Third Row of Marquee */}
+      <Marquee className="mb-4" pauseOnHover style={{ '--duration': '130s' }}>
+        <div className="flex space-x-4">
+          {inventoryState.map((card) => (
+            <Card 
+              key={card.id} 
+              className="cursor-pointer bg-gray-800 hover:bg-gray-700 transition-colors group w-48"
+            >
+              <CardContent className="p-2 relative">
+                <div className="relative w-full aspect-[2/3]">
+                  {cardImages[card.id] ? (
+                    <>
+                      <Image
+                        src={cardImages[card.id]}
+                        alt={card.name}
+                        layout="fill"
+                        className={`rounded-md shadow-md ${!card.available ? 'brightness-50' : ''}`}
+                      />
+                      {!card.available && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <X className="text-white w-12 h-12" />
+                        </div>
+                      )}
+                      {isCardInStack(card.id) && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Layers3 className="text-white w-12 h-12" />
+                        </div>
+                      )}
+                      {card.available && !isCardInStack(card.id) && <ConditionBadge condition={card.condition} />}
+                    </>
+                  ) : (
+                    <div className="w-full h-full bg-gray-700 flex items-center justify-center rounded-md">
+                      <span className="text-gray-400 text-xs">Loading...</span>
+                    </div>
+                  )}
+                </div>
+                <CardActions 
+                  card={card}
+                  queue={queue}
+                  onAddToStack={handleAddToStack}
+                  onMarkSold={handleMarkSold}
+                />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </Marquee>
+
+      <div className="mt-8 flex">
+        <div className="w-1/4"></div>
         <div className="w-3/4"></div>
       </div>
     </div>

@@ -59,6 +59,9 @@ module.exports = {
   		animation: {
   			gradient: 'gradient 8s linear infinite',
   			'text-gradient': 'text-gradient 1.5s linear infinite',
+  			marquee: 'marquee var(--duration) infinite linear',
+  			'marquee-vertical': 'marquee-vertical var(--duration) linear infinite',
+  			shine: 'shine var(--duration) infinite linear'
   		},
   		keyframes: {
   			gradient: {
@@ -68,9 +71,36 @@ module.exports = {
   			},
   			'text-gradient': {
   				to: {
-  					backgroundPosition: '200% center',
-  				},
+  					backgroundPosition: '200% center'
+  				}
   			},
+  			marquee: {
+  				from: {
+  					transform: 'translateX(0)'
+  				},
+  				to: {
+  					transform: 'translateX(calc(-100% - var(--gap)))'
+  				}
+  			},
+  			'marquee-vertical': {
+  				from: {
+  					transform: 'translateY(0)'
+  				},
+  				to: {
+  					transform: 'translateY(calc(-100% - var(--gap)))'
+  				}
+  			},
+  			shine: {
+  				'0%': {
+  					'background-position': '0% 0%'
+  				},
+  				'50%': {
+  					'background-position': '100% 100%'
+  				},
+  				to: {
+  					'background-position': '0% 0%'
+  				}
+  			}
   		}
   	}
   },
