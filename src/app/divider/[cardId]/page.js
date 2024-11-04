@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, BarChart2, DollarSign } from "lucide-react";
 import upcomingSets from "@/app/data/sets";
+import scoreData from "@/app/data/scores";
 import Image from 'next/image';
 
 function calculateImpact(impactRange) {
@@ -86,6 +87,10 @@ const StatsComponent = ({ cardData }) => {
 
   const demandIndex = calculateDemandIndex(marketPrice, averageSellPrice);
 
+  const competitiveness = scoreData[cardData.set.id]?.competitiveness || 'Midly';
+  const availability = scoreData[cardData.set.id]?.availability || 'Limited';
+  const printRunScarcity = scoreData[cardData.set.id]?.printRunScarcity || 'Standard';
+
   const StatItem = ({ label, value, trend, isMarketPrice = false }) => (
     <div className="flex flex-col">
       <h3 className="text-sm font-medium text-gray-300 mb-1">{label}</h3>
@@ -110,7 +115,10 @@ const StatsComponent = ({ cardData }) => {
     </div>
   );
 
+  console.log(JSON.stringify(cardData));
+
   return (
+    <div className="relative">
     <div 
       className="p-[1px] rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 via-pink-500 via-red-500 via-yellow-500 via-green-500 to-blue-500"
       style={{
@@ -171,6 +179,30 @@ const StatsComponent = ({ cardData }) => {
           />
         </div>
       </Card>
+    </div>
+      <div className="flex justify-between mt-4">
+        <Badge variant="outline" className="text-xs border-zinc-700 text-gray-300">
+          ⚔️ {competitiveness} Competitive
+        </Badge> 
+        <Badge variant="outline" className="text-xs border-zinc-700 text-gray-300">
+          💎 {availability} Availability
+        </Badge>
+        <Badge variant="outline" className="text-xs border-zinc-700 text-gray-300">
+          🦄 {printRunScarcity} Scarcity
+        </Badge>
+        <Badge variant="outline" className="text-xs border-zinc-700 text-gray-300">
+          🔥 {cardData.rarity}
+        </Badge>
+        {upcomingSets.find(set => 
+          set.relatedPokemon.some(pokemon => cardData.name.includes(pokemon))
+        ) && (
+          <Badge variant="outline" className="text-xs border-zinc-700 text-gray-300">
+            🌀 {upcomingSets.find(set => 
+              set.relatedPokemon.some(pokemon => cardData.name.includes(pokemon))
+            )?.name}
+          </Badge>
+        )}
+      </div>
     </div>
   );
 };
